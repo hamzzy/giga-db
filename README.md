@@ -1,4 +1,4 @@
-# **GPU-Accelerated S3-Based Columnar Database **
+# **GPU-Accelerated S3-Based Columnar Database**
 
 A high-performance columnar database, leveraging **GPU acceleration** for query execution and for object storage.
 
