@@ -1,0 +1,14 @@
+[package]
+name = "gpu_columnar_db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1.62.0"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+dotenv = "0.15.0"
+arrow = { version = "53.0.0", features = ["prettyprint", "chrono-tz"] }

@@ -1,0 +1,8 @@
+.env
+/target
+/pkg
+.DS_Store
+.idea/
+*.iml
+**/*.rs.bk
+Cargo.lock
