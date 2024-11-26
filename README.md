@@ -26,5 +26,4 @@ A high-performance columnar database, leveraging **GPU acceleration** for query 
 ### **Setup**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo-name/gpu_columnar_db.git
-   cd gpu_columnar_db
+   git clone https://github.com/hamzzy/giga-db
