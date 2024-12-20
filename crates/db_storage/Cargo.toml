@@ -1,0 +1,15 @@
+[package]
+name = "db_storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+db_common = { path = "../db_common" }
+rusoto_s3 = "0.48"
+aws-config = "1.1"
+aws-sdk-s3 = "1.1"
+tokio = { version = "1", features = ["full"] }
+parquet = "53.3.0"
+async-trait = "0.1"
+futures-util = "0.3" 
+uuid = { version = "1.6", features = ["v4", "serde"] }

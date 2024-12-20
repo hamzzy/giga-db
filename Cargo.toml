@@ -1,0 +1,27 @@
+[package]
+name = "db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+    tokio = { version = "1", features = ["full"] }
+    actix-web = "4"
+    serde = { version = "1.0", features = ["derive"] }
+    db_client = { path = "crates/db_client" }
+    db_common = { path = "crates/db_common" }
+    db_coordinator = { path = "crates/db_coordinator" }
+    db_metadata = { path = "crates/db_metadata" }
+    db_storage = { path = "crates/db_storage" }
+    db_worker = { path = "crates/db_worker" }
+    rusoto_core = "0.48"
+
+[workspace]
+members = [
+    "crates/db_client",
+    "crates/db_coordinator",
+    "crates/db_worker",
+    "crates/db_storage",
+    "crates/db_metadata",
+    "crates/db_common",
+    "crates/db_sql"
+]

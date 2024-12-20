@@ -1,0 +1,12 @@
+[package]
+name = "db_coordinator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+db_common = { path = "../db_common" }
+db_metadata = { path = "../db_metadata" }
+db_sql = { path = "../db_sql" }
+db_worker = { path = "../db_worker" }
+ tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"

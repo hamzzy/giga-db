@@ -1,0 +1,8 @@
+[package]
+name = "db_sql"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+db_common = { path = "../db_common" }
+sqlparser = "0.53.0"
