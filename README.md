@@ -1,5 +1,4 @@
 
-```markdown
 # GPU-Accelerated Columnar Database in Rust
 
 This project is an attempt to build a GPU-accelerated columnar database from scratch, inspired by systems like Snowflake, using Rust. It leverages object storage (AWS S3-compatible) for data persistence, and GPU processing for fast analytical queries.
@@ -46,5 +45,5 @@ We welcome contributions to this project. To contribute, please:
 2.  Create a new branch for your feature or bug fix.
 3.  Implement your changes, write tests, and make sure all the existing tests pass.
 4.  Submit a pull request with a detailed description of your changes.
-```
+
 
