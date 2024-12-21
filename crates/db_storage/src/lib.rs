@@ -4,6 +4,7 @@ use parquet::file::{reader::FileReader};
 use parquet::record::{RowAccessor};
 use std::{fs::File};
 use aws_sdk_s3::{Client};
+use aws_config::BehaviorVersion;
 
 #[async_trait]
 pub trait StorageManager {
@@ -19,7 +20,7 @@ pub struct S3StorageManager {
 
 impl S3StorageManager {
     pub async fn new(bucket_name: String, local_storage_path: String) -> Result<Self, DbError> {
-        let config = aws_config::from_env().region("us-east-1").load().await;
+        let config = aws_config::load_from_env().await;
         let client = Client::new(&config);
         Ok(Self { client, bucket_name, local_storage_path })
     }

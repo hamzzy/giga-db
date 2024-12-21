@@ -5,7 +5,7 @@ use db_storage::{S3StorageManager, StorageManager};
 use db_worker::{GPUWorker, Worker};
 use db_coordinator::{Coordinator, SimpleCoordinator};
 use db_client::DbClient;
-use aws_sdk_s3::Region;
+use log::{info, error};
 use tokio::sync::Mutex;
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use serde::{Serialize, Deserialize};
@@ -15,24 +15,34 @@ struct QueryRequest {
 }
 
 async fn query(
-    req_body: web::Json<QueryRequest>, 
-    coordinator: web::Data<Arc<dyn Coordinator + Send + Sync>>
+  req_body: web::Json<QueryRequest>, 
+  coordinator: web::Data<Arc<dyn Coordinator + Send + Sync>>
 ) -> impl Responder {
-   let result = coordinator.execute_query(&req_body.query).await;
-   match result {
-        Ok(result) => HttpResponse::Ok().json(result),
-        Err(error) => HttpResponse::InternalServerError().body(error.to_string())
-   }
+  let result = coordinator.execute_query(&req_body.query).await;
+
+  match result {
+      Ok(mut rows) => {
+          // Sorting logic here (e.g., sort by the first column)
+          rows.rows.sort_by(|a, b| a[0].cmp(&b[0]));
+          info!("Query executed successfully and sorted.");
+          HttpResponse::Ok().json(rows)
+      },
+      Err(error) => {
+          error!("Error executing query: {}", error);
+          HttpResponse::InternalServerError().body(error.to_string())
+      }
+  }
 }
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+  env_logger::init(); // Initialize logging
+
   let db_path = "metadata.db";
   let metadata_manager = Arc::new(RocksDBMetadataManager::new(db_path).unwrap());
   let local_storage_path = "local_storage";
-  let bucket_name = "my_s3_bucket".to_string();
-  let region = Region::from_static("us-east-1");
-  let storage_manager = Arc::new(S3StorageManager::new(bucket_name, local_storage_path.to_string(), region).await.unwrap());
+  let bucket_name = "columnar-test".to_string();
+  let storage_manager = Arc::new(S3StorageManager::new(bucket_name, local_storage_path.to_string()).await.unwrap());
   let gpu_worker = GPUWorker::new(storage_manager).await.unwrap();
   let worker = Arc::new(Mutex::new(gpu_worker));
   let coordinator = Arc::new(SimpleCoordinator::new(metadata_manager, worker).await);
@@ -45,24 +55,8 @@ async fn main() -> std::io::Result<()> {
         ]
     };
     coordinator.create_table(&table_def).await.unwrap();
-     // Create data in S3
-    let data = db_common::QueryResult {
-        rows: vec![
-            vec!["1".to_string(), "test".to_string()],
-            vec!["2".to_string(), "another".to_string()],
-            vec!["3".to_string(), "another2".to_string()],
-             vec!["4".to_string(), "another3".to_string()],
-        ]
-    };
-   let s3_key = "test.parquet";
-   let s3_storage_manager = Arc::clone(&coordinator).downcast::<SimpleCoordinator<RocksDBMetadataManager, GPUWorker>>().unwrap();
-    let s3_storage = s3_storage_manager.metadata_manager.clone();
-    let downcasted_s3_manager = Arc::clone(&s3_storage_manager).downcast::<SimpleCoordinator<RocksDBMetadataManager, GPUWorker>>().unwrap();
-    let storage = downcasted_s3_manager.worker.lock().await.storage_manager.clone();
-    // We no longer write to parquet file
-    // storage.write_data_to_s3(&table_def, data, s3_key).await.unwrap();
 
-    
+
   let coordinator_for_server = Arc::clone(&coordinator);
     HttpServer::new(move || {
          App::new()
@@ -72,6 +66,7 @@ async fn main() -> std::io::Result<()> {
         .bind(("127.0.0.1", 8080))?
          .run()
          .await?;
+        println!("Server is starting...");
 
 
     Ok(())

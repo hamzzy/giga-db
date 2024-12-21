@@ -1,5 +1,5 @@
-use db_common::{DbError, ExecutionTree, Filter, FilterOperator, QueryPlan, QueryResult, TableChunk};
-use sqlparser::{ast::{Statement, Query, Expr, BinaryOperator, Ident}, dialect::GenericDialect, parser::Parser};
+use db_common::{DbError, ExecutionTree, Filter, FilterOperator, QueryPlan, QueryResult};
+use sqlparser::{ast::{Statement, Query, Expr, BinaryOperator}, dialect::GenericDialect, parser::Parser};
 pub struct SqlParser;
 
 impl SqlParser {

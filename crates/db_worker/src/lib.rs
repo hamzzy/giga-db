@@ -1,10 +1,9 @@
-use db_common::{DbError, QueryResult, Filter, FilterOperator, TableDefinition, ColumnDefinition, ColumnType, QueryPlan};
+use db_common::{ColumnDefinition, ColumnType, DbError, ExecutionTree, Filter, FilterOperator, QueryPlan, QueryResult, TableDefinition};
 use db_storage::StorageManager;
 use async_trait::async_trait;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use futures::executor::block_on;
-use db_sql::ExecutionTree;
 #[async_trait]
 pub trait Worker {
     async fn execute_query_fragment(&self, tree: &ExecutionTree) -> Result<QueryResult, DbError>;
