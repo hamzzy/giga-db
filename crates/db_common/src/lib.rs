@@ -31,6 +31,8 @@ pub enum ColumnType {
     Float,
     String,
     Boolean,
+    Date,
+    Double,
     // Add other types as needed
 }
 
@@ -38,6 +40,7 @@ pub enum ColumnType {
 pub struct TableDefinition {
     pub name: String,
     pub columns: Vec<ColumnDefinition>,
+    pub chunks: Vec<String>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,9 +50,10 @@ pub struct QueryResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Filter {
-    pub column_index: usize,
-    pub value: String,
-    pub operator: FilterOperator
+   pub column_index: usize,
+   pub value: String,
+    pub operator: FilterOperator,
+    pub column_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,30 +64,29 @@ pub enum FilterOperator {
     NotEqual,
 }
 
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DataPartition {
-     pub column_name: String,
-     pub value: String
-}
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TableChunk {
-   pub s3_key: String,
-   pub data_partition: Option<DataPartition>,
-   pub worker_id: Option<u64>
-}
-
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryPlan {
-    pub chunks: Vec<TableChunk>,
-    pub filter: Option<Filter>,
+    pub chunks: Vec<String>,
     pub column_name: Option<String>,
+    pub filter: Option<Filter>,
+    pub aggregation: Option<Aggregation>,
+     pub projection: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Aggregation {
+    pub column_index: usize,
+    pub aggregation_type: AggregationType
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AggregationType {
+    Sum,
+    Average
 }
 
 #[derive(Debug, Clone)]
 pub enum ExecutionTree {
     Select { plan: QueryPlan},
 }
+

@@ -1,5 +1,5 @@
-use db_common::{DbError, ExecutionTree, Filter, FilterOperator, QueryPlan, QueryResult};
-use sqlparser::{ast::{Statement, Query, Expr, BinaryOperator}, dialect::GenericDialect, parser::Parser};
+use db_common::{Aggregation, AggregationType, DbError, ExecutionTree, Filter, FilterOperator, QueryPlan, QueryResult};
+use sqlparser::{ast::{Statement, Query, Expr, BinaryOperator, Ident, Function, SelectItem, FunctionArg, FunctionArgExpr}, dialect::GenericDialect, parser::Parser};
 pub struct SqlParser;
 
 impl SqlParser {
@@ -17,31 +17,78 @@ impl SqlParser {
        // Transform parsed SQL to an internal execution tree
        let select = query.body;
 
-       if let sqlparser::ast::SetExpr::Select(select) = *select {
-           let mut filter = None;
-             let mut column_name = None;
-           if let Some(filter_expression) = select.selection {
-              filter = Self::transform_where(filter_expression)?;
+       let mut query_plan = QueryPlan {
+           chunks: Vec::new(),
+           column_name: None,
+           filter: None,
+           aggregation: None,
+           projection: Vec::new()
+       };
+      if let sqlparser::ast::SetExpr::Select(select) = *select {
+           for projection in &select.projection {
+                match projection {
+                     SelectItem::UnnamedExpr(expression)  => {
+                        match expression {
+                            Expr::Identifier(identifier) => query_plan.projection.push(identifier.value.clone()),
+                            //   Expr::Function(function) => {
+                            //     let aggregation = Self::transform_aggregate(function.clone())?;
+                            //      query_plan.aggregation = Some(aggregation);
+                            // },
+                             _ => return Err(DbError::SqlParsingError("Invalid projection expression".to_string()))
+                        }
+                      },
+                      SelectItem::Wildcard(_) => {
+                         //For now we will get all columns
+                        query_plan.projection.push("*".to_string());
+                     }
+                      _ => return Err(DbError::SqlParsingError("Invalid projection expression".to_string()))
+                 }
            }
-           if let Some(projection) = select.projection.first() {
-                if let sqlparser::ast::SelectItem::UnnamedExpr(expr) = projection {
-                    if let Expr::Identifier(identifier) = expr {
-                       column_name = Some(identifier.value.clone());
-                    }
-               }
-            }
 
-           return Ok(ExecutionTree::Select {plan: QueryPlan { chunks: Vec::new(), filter, column_name}})
+          if let Some(filter_expression) = select.selection {
+               let filter = Self::transform_where(filter_expression)?;
+               query_plan.filter = filter;
+           }
        }
-        Ok(ExecutionTree::Select {plan: QueryPlan { chunks: Vec::new(), filter: None, column_name: None}})
+        Ok(ExecutionTree::Select{plan: query_plan})
     }
+
+    // fn transform_aggregate(function: Function) -> Result<Aggregation, DbError> {
+    //     let aggregation_type = match function.name.to_string().to_lowercase().as_str() {
+    //         "sum" => AggregationType::Sum,
+    //         "avg" => AggregationType::Average,
+    //         _ => return Err(DbError::SqlParsingError("Invalid aggregation function".to_string())),
+    //     };
+
+    //     let column_index = function
+    //         .args.
+    //         .find_map(|arg| Ok(match arg {
+    //             FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) => match expression {
+    //                 Expr::Identifier(identifier) => Some(
+    //                     identifier
+    //                         .value
+    //                         .parse::<usize>()
+    //                         .map_err(|_| DbError::SqlParsingError("Column name must be an index".to_string()))?,
+    //                 ),
+    //                 _ => return Err(DbError::SqlParsingError("Invalid column name".to_string())),
+    //             },
+    //             _ => return Err(DbError::SqlParsingError("Invalid aggregation function argument".to_string())),
+    //         }))
+    //         .ok_or_else(|| DbError::SqlParsingError("Invalid aggregation function".to_string()))?;
+
+    //     Ok(Aggregation {
+    //         column_index,
+    //         aggregation_type,
+    //     })
+    // }
+
 
     fn transform_where(expression: Expr) -> Result<Option<Filter>, DbError> {
         if let Expr::BinaryOp { left, op, right } = expression {
-             let column_name = match *left {
+            let column_name = match *left {
                 Expr::Identifier(identifier) => {
                     identifier.value.clone()
-                 },
+                },
                 _ => return Err(DbError::SqlParsingError("Invalid column name".to_string())),
             };
 
@@ -59,16 +106,9 @@ impl SqlParser {
                 BinaryOperator::NotEq => FilterOperator::NotEqual,
                 _ => return Err(DbError::SqlParsingError("Invalid operator".to_string()))
              };
-           return Ok(Some(Filter{ column_index: 0, value, operator}))
+           return Ok(Some(Filter{ column_index: 0, value, operator, column_name}))
         }
       Ok(None)
     }
 }
 
-
-
-//Placeholder function to actually execute query on some data.
-pub async fn execute(_tree: ExecutionTree) -> Result<QueryResult, DbError> {
-    //TODO
-    Ok(QueryResult{ rows: Vec::new()})
-}

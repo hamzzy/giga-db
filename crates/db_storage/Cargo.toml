@@ -13,3 +13,6 @@ parquet = "53.3.0"
 async-trait = "0.1"
 futures-util = "0.3" 
 uuid = { version = "1.6", features = ["v4", "serde"] }
+bytes = "1"
+futures = "0.3"
+dotenv = "0.15.0"

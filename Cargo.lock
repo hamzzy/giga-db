@@ -1270,6 +1270,7 @@ dependencies = [
  "db_metadata",
  "db_storage",
  "db_worker",
+ "dotenv",
  "env_logger",
  "log",
  "serde",
@@ -1333,7 +1334,10 @@ dependencies = [
  "async-trait",
  "aws-config",
  "aws-sdk-s3",
+ "bytes",
  "db_common",
+ "dotenv",
+ "futures",
  "futures-util",
  "parquet",
  "rusoto_s3",
@@ -1447,6 +1451,12 @@ checksum = "cb6969eaabd2421f8a2775cfd2471a2b634372b4a25d41e3bd647b79912850a0"
 dependencies = [
  "litrs",
 ]
+
+[[package]]
+name = "dotenv"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "ecdsa"
